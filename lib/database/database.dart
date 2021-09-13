@@ -222,6 +222,7 @@ class DB{
     nbre_homme TEXT,
     nbre_membre TEXT,
     observation TEXT,
+    agreement TEXT,
     flagtransmis TEXT)
     ''');
     //table detenteur_culture
@@ -260,7 +261,7 @@ class DB{
     id TEXT PRIMARY KEY,
     idpersonne TEXT,
     status TEXT,
-    ordre TEXT,
+    ordre INTEGER,
     flagtransmis TEXT)
     ''');
     //table suivit grossesse
@@ -277,12 +278,34 @@ class DB{
     status TEXT,
     flagtransmis TEXT)
     ''');
+    //Table enfant
+    await db.execute('''
+    CREATE TABLE enfant(
+    id TEXT PRIMARY KEY,
+    nom TEXT,
+    prenom TEXT,
+    sexe TEXT,
+    dateNaissance TEXT,
+    idgrossesse TEXT,
+    date_limit TEXT,
+    flagtransmis TEXT)
+    ''');
+    //table suivit_enfant
+    await db.execute('''
+    CREATE TABLE suivit_enfant(
+    id TEXT PRIMARY KEY,
+    idEnfant TEXT,
+    poids TEXT,
+    taille TEXT,
+    dateSuivit TEXT,
+    flagtransmis TEXT)
+    ''');
     //-------------------------QUESTIONNAIRE ELEVE -----------------------
     //table QUIZE
     await db.execute('''
     CREATE TABLE quiz_eleve(
     id TEXT PRIMARY KEY,
-    idpersonne TEXT,
+    idecole TEXT,
     quiz1 TEXT,
     quiz2 TEXT,
     quiz3 TEXT,
@@ -399,8 +422,14 @@ class DB{
   //Select 2 deux Were
   static Future<List<Map<String, dynamic>>> query2Where(String table, String email, String mdp) async => await _db.query(table, where: 'email = ? and mdp = ?', whereArgs: [email,mdp]);
 
+  //Select 2 deux Were
+  static Future<List<Map<String, dynamic>>> queryEmail(String table, String email) async => await _db.query(table, where: 'email = ?', whereArgs: [email]);
+
   //Select 3 trois where
   static Future<List<Map<String, dynamic>>> query3Where(String table, String email, String mdp, String iud) async => await _db.query(table, where: 'email = ? and mdp = ? and iud = ?', whereArgs: [email,mdp,iud]);
+
+  //Select 3 trois where
+  static Future<List<Map<String, dynamic>>> queryEmailNfc(String table, String email, String iud) async => await _db.query(table, where: 'email = ? and iud = ?', whereArgs: [email,iud]);
 
   //Select 1 un Were uid
   static Future<List<Map<String, dynamic>>> queryWhereUid(String table, String uid) async => await _db.query(table, where: 'iud = ?', whereArgs: [uid]);
@@ -465,7 +494,8 @@ class DB{
   //Query Searche en fonction de se qui se passe
   static Future<List<Map<String, dynamic>>> querySearch(String idloc, String query, String id_dg) async => await _db.rawQuery('select *,max(inscription.idtypeannee) as derniereAnne,classe.id AS idclasse, classe.anneeScolaire,classe.idtypeniveau, personne.id as idpersonne, personne.nom, personne.prenom, inscription.idtypeannee, inscription.anneeScolaire, codification.description as classe FROM personne, classe, inscription, ecole, personne_adresse, localite, codification WHERE personne.id = personne_adresse.idpersonne AND personne_adresse.idlocalite = "$idloc" AND classe.idecole = ecole.id AND ecole.idpersonne = "$id_dg" AND personne.id = inscription.idpersonne AND inscription.idclasse = classe.id and classe.idtypeniveau = codification.idcodification and (nom Like "%$query%" OR prenom Like "%$query%") GROUP BY personne.id');
 
-
+  //Select in table Femme allaitante (enfant)
+  static Future<List<Map<String, dynamic>>> queryPersonEnfant(String idp) async => await _db.rawQuery('SELECT * FROM grossesse,enfant WHERE grossesse.id = enfant.idgrossesse and grossesse.idpersonne = "$idp" ');
 
   //Select in table Femme enceinte
   static Future<List<Map<String, dynamic>>> queryPersonFemmeE(String idloc) async => await _db.rawQuery('SELECT *,personne.id AS id FROM personne,personne_fonction,personne_adresse WHERE personne.id = personne_fonction.idpersonne and personne_fonction.idtypefonction = "FE" and personne.id = personne_adresse.idpersonne and personne_adresse.idlocalite = "$idloc"');
@@ -485,8 +515,20 @@ class DB{
   //Select in table Suivitrepas
   static Future<List<Map<String, dynamic>>> queryNbrScan(String date) async => await _db.rawQuery('SELECT COUNT(date) AS nombre FROM suivit_repas WHERE date="$date"');
 
-  //Select in table poids
+  //Select in table datesuivit,poids
   static Future<List<Map<String, dynamic>>> queryPoidsFemme(String idgrossesse, String status) async => await _db.rawQuery('SELECT datesuivit,poids FROM suivit_grossesse WHERE idgrossesse="$idgrossesse" and status ="$status"');
+
+  //Select in table * suivit_femme
+  static Future<List<Map<String, dynamic>>> querySuivitFemmeTableau(String idgrossesse, String status) async => await _db.rawQuery('SELECT datesuivit,poids,taille,imc,pb FROM suivit_grossesse WHERE idgrossesse="$idgrossesse" and status ="$status"');
+
+  //Select in table poids
+  static Future<List<Map<String, dynamic>>> querySuivitEnfantTab(String idenfant,) async => await _db.rawQuery('SELECT poids,taille,datesuivit FROM suivit_enfant WHERE idenfant="$idenfant"');
+
+  //Select in table poids
+  static Future<List<Map<String, dynamic>>> querySuivitEnfant(String idenfant,) async => await _db.rawQuery('SELECT datesuivit,poids FROM suivit_enfant WHERE idenfant="$idenfant"');
+
+  //Select in table poids
+  static Future<List<Map<String, dynamic>>> querySuivitEnfantTaille(String idenfant,) async => await _db.rawQuery('SELECT datesuivit,taille FROM suivit_enfant WHERE idenfant="$idenfant"');
 
   //*************************************************************************************************************************************************
   //|          Media Querie
@@ -522,9 +564,12 @@ class DB{
   //Recuperation des info de l'annee scolaire
   static Future<List<Map<String, dynamic>>> queryAnneeScolaire() async => await _db.rawQuery('SELECT * FROM annee_scolaire order by id desc limit 1');
 
-
-
-
 //------------------------------------------------------------------------------------------------------------------------------------------
+
+  //Drop or deleted All Table
+
+  //personne
+  static Future<List<Map<String, dynamic>>> troncatTable(String table) async => await _db.rawQuery('DELETE from "$table"');
+
 
 }

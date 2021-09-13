@@ -4,9 +4,7 @@ import 'dart:io';
 import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart';
-import 'dart:typed_data';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:intl/intl.dart';
 
@@ -102,6 +100,101 @@ class Synchro {
 
       //final conn = await MySqlConnection.connect(ConnectionSettings(
       // host: '192.168.43.8', port: 3306, user: 'root', db: 'pam2'));
+      try{
+        //vente
+
+        //final conn = await MySqlConnection.connect(ConnectionSettings(
+        // host: '192.168.43.8', port: 3306, user: 'root', db: 'pam2'));
+        var get_annee_scolaire_rows = await conn.query(
+            'SELECT * FROM   annee_scolaire ',
+            []);
+
+        //var codification_update_time = "";
+        // print("flagtransmis" + vente_update_time);
+        counting = 0;
+        for (var row in get_annee_scolaire_rows) {
+          try{
+            // print("new" + row['flagtransmis']);
+            var id = row['id'];
+            int exiting = Sqflite.firstIntValue(await db
+                .rawQuery('SELECT COUNT(*) FROM annee_scolaire  where id=?', [id]));
+            if (exiting != 0) {
+              //update
+
+            } else {
+              //insert
+              await db.rawQuery(
+                  'INSERT INTO `annee_scolaire` (`id`, `description`) VALUES (?,?)',
+                  [
+                    row['id'],
+                    row['description']
+
+                  ]);
+              counting++;
+            }
+          }catch(e){
+            print("error from a row "+e.toString());
+          }
+
+        }
+        //await db.rawQuery('DELETE FROM `vente` WHERE 1', []);
+        // List<Map> svente = await db.rawQuery('SELECT * FROM vente');
+        //print(svente);
+
+        print('annee_scolaire ${counting}');
+        //end quiz_femmeEnceinte
+      }catch(e){
+        print("error annee_scolaire "+e.toString());
+      }
+
+
+      try{
+
+
+        //final conn = await MySqlConnection.connect(ConnectionSettings(
+        // host: '192.168.43.8', port: 3306, user: 'root', db: 'pam2'));
+        var get_campagne_agricol_rows = await conn.query(
+            'SELECT * FROM   campagne_agricol ',
+            []);
+
+        //var codification_update_time = "";
+        // print("flagtransmis" + vente_update_time);
+        counting = 0;
+        for (var row in get_campagne_agricol_rows) {
+          try{
+            // print("new" + row['flagtransmis']);
+            var id = row['id'];
+            int exiting = Sqflite.firstIntValue(await db
+                .rawQuery('SELECT COUNT(*) FROM campagne_agricol  where id=?', [id]));
+            if (exiting != 0) {
+              //update
+
+            } else {
+              //insert
+              await db.rawQuery(
+                  'INSERT INTO `campagne_agricol`(`id`, `description`) VALUES (?,?)',
+                  [
+                    row['id'],
+                    row['description']
+
+                  ]);
+              counting++;
+            }
+          }catch(e){
+            print("error from a row "+e.toString());
+          }
+
+        }
+        //await db.rawQuery('DELETE FROM `vente` WHERE 1', []);
+        // List<Map> svente = await db.rawQuery('SELECT * FROM vente');
+        //print(svente);
+
+        print('campagne_agricol ${counting}');
+        //end quiz_femmeEnceinte
+      }catch(e){
+        print("error campagne_agricol "+e.toString());
+      }
+
       try{
         var get_localite_rows = await conn.query('SELECT * FROM  localite  order by flagtransmis asc', []);
 
@@ -229,6 +322,12 @@ class Synchro {
       }catch(e){
         print("error langue"+e.toString());
       }
+
+
+
+
+
+
 
 
 
@@ -1143,7 +1242,7 @@ class Synchro {
 
                 await db.rawUpdate(
                     'UPDATE `plantation` SET `description`=?,`superficie`=?,`idlocalite`=?,`observation`=?,'
-                        '`flagtransmis`=?,`groupement`=?,`longitude`=?,`latitude`=?,`nbre_femme`=?,`nbre_homme`=?,`nbre_membre`=?  WHERE id=?',
+                        '`flagtransmis`=?,`groupement`=?,`longitude`=?,`latitude`=?,`nbre_femme`=?,`nbre_homme`=?,`nbre_membre`=?,`agreement`=?  WHERE id=?',
                     [
                       row['description'],
 
@@ -1157,6 +1256,7 @@ class Synchro {
                       row['nbre_femme'],
                       row['nbre_homme'],
                       row['nbre_membre'],
+                      row['agreement'],
                       row['idplantation']
                     ]);
               }
@@ -1165,7 +1265,7 @@ class Synchro {
 
               await db.rawQuery(
                   'INSERT INTO `plantation`(`id`,`description`,  `superficie`, `idlocalite`, `observation`,'
-                      ' `flagtransmis`, `groupement`, `longitude`, `latitude`, nbre_femme, nbre_homme, nbre_membre) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+                      ' `flagtransmis`, `groupement`, `longitude`, `latitude`, nbre_femme, nbre_homme, nbre_membre,agreement) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
                   [
                     row['idplantation'],
                     row['description'],
@@ -1179,7 +1279,8 @@ class Synchro {
                     row['latitude'],
                    row['nbre_femme'],
                    row['nbre_homme'],
-                  row['nbre_membre']
+                  row['nbre_membre'],
+                    row['agreement']
                   ]);
               counting++;
             }
@@ -1521,6 +1622,157 @@ class Synchro {
           print("error vente "+e.toString());
         }
 
+
+        //get children
+        try{
+
+
+          //final conn = await MySqlConnection.connect(ConnectionSettings(
+          // host: '192.168.43.8', port: 3306, user: 'root', db: 'pam2'));
+          var get_enfant_rows = await conn.query(
+              'SELECT * FROM  enfant  where (locate=? or locate=?) order by flagtransmis asc',
+              [ids.first['locate'], 'all']);
+
+          //var codification_update_time = "";
+          // print("flagtransmis" + vente_update_time);
+          counting = 0;
+          for (var row in get_enfant_rows) {
+            try{
+              // print("new" + row['flagtransmis']);
+              var id = row['idEnfant'];
+              int exiting = Sqflite.firstIntValue(await db
+                  .rawQuery('SELECT COUNT(*) FROM enfant  where id=?', [id]));
+              if (exiting != 0) {
+                //update
+                List<Map> enfant_update = await db.rawQuery(
+                    'SELECT * FROM enfant   where id=?', [id]);
+                var enfant_update_time;
+                if (enfant_update.length == 0)
+                  enfant_update_time = "";
+                else
+                  enfant_update_time = enfant_update.first['flagtransmis'];
+                if ((enfant_update_time).toString().compareTo(row['flagtransmis']) <
+                    0) {
+                  counting++;
+                  await db.rawUpdate(
+                      'UPDATE `enfant` SET `nom`=?,`prenom`=?,`sexe`=?,`dateNaissance`=?,`idgrossesse`=?,`date_limit`=?,`flagtransmis`=? WHERE id=?',
+                      [
+                        row['nom'],
+                        row['prenom'],
+                        row['sexe'],
+                        row['dateNaissance'],
+                        row['idgrossesse'],
+                        row['date_limit'],
+                        row['flagtransmis'],
+                        row['idEnfant']
+                      ]);
+                }
+              } else {
+
+
+                //insert
+                await db.rawQuery(
+                    'INSERT INTO `enfant`(`id`, `nom`, `prenom`, `sexe`, `dateNaissance`,'
+                        ' `idgrossesse`, `date_limit`,  `flagtransmis`) VALUES (?,?,?,?,?,?,?,?)',
+                    [
+                      row['idEnfant'],
+                      row['nom'],
+                      row['prenom'],
+                      row['sexe'],
+                      row['dateNaissance'],
+                      row['idgrossesse'],
+                      row['date_limit'],
+                      row['flagtransmis']
+                    ]);
+                counting++;
+              }
+            }catch(e){
+              print("error from a row "+e.toString());
+            }
+
+          }
+          //await db.rawQuery('DELETE FROM `vente` WHERE 1', []);
+          // List<Map> svente = await db.rawQuery('SELECT * FROM vente');
+          //print(svente);
+
+          print('enfant ${counting}');
+          //end vente
+        }catch(e){
+          print("error enfant "+e.toString());
+        }
+
+
+        try{
+
+          //final conn = await MySqlConnection.connect(ConnectionSettings(
+          // host: '192.168.43.8', port: 3306, user: 'root', db: 'pam2'));
+          var get_suivit_enfant_rows = await conn.query(
+              'SELECT * FROM  suivit_enfant  where (locate=? or locate=?) order by flagtransmis asc',
+              [ids.first['locate'], 'all']);
+
+          //var codification_update_time = "";
+          // print("flagtransmis" + vente_update_time);
+          counting = 0;
+          for (var row in get_suivit_enfant_rows) {
+            try{
+              // print("new" + row['flagtransmis']);
+              var id = row['idSuivitEnfant'];
+              int exiting = Sqflite.firstIntValue(await db
+                  .rawQuery('SELECT COUNT(*) FROM suivit_enfant  where id=?', [id]));
+              if (exiting != 0) {
+                //update
+                List<Map> suivit_enfant_update = await db.rawQuery(
+                    'SELECT * FROM suivit_enfant   where id=?', [id]);
+                var suivit_enfant_update_time;
+                if (suivit_enfant_update.length == 0)
+                  suivit_enfant_update_time = "";
+                else
+                  suivit_enfant_update_time = suivit_enfant_update.first['flagtransmis'];
+                if ((suivit_enfant_update_time).toString().compareTo(row['flagtransmis']) <
+                    0) {
+                  counting++;
+                  await db.rawUpdate(
+                      'UPDATE `suivit_enfant` SET idEnfant,`poids`=?,`taille`=?,`dateSuivit`=?,`flagtransmis`=? WHERE id=?',
+                      [
+                        row['idEnfant'],
+                        row['poids'],
+                        row['taille'],
+                        row['dateSuivit'],
+                        row['flagtransmis'],
+                        row['idSuivitEnfant']
+                      ]);
+                }
+              } else {
+
+
+
+
+                //insert
+                await db.rawQuery(
+                    'INSERT INTO `suivit_enfant`(`id`,idEnfant, `poids`, `taille`, `dateSuivit`, `flagtransmis`) VALUES (?,?,?,?,?,?)',
+                    [
+                      row['idSuivitEnfant'],
+                      row['idEnfant'],
+                      row['poids'],
+                      row['taille'],
+                      row['dateSuivit'],
+                      row['flagtransmis']
+                    ]);
+                counting++;
+              }
+            }catch(e){
+              print("error from a row "+e.toString());
+            }
+
+          }
+
+          print('suivit_enfant ${counting}');
+          //end vente
+        }catch(e){
+          print("error suivit_enfant "+e.toString());
+        }
+
+
    /*
         try{
           //vente
@@ -1696,99 +1948,7 @@ class Synchro {
         }
         */
 
-        try{
 
-
-          //final conn = await MySqlConnection.connect(ConnectionSettings(
-          // host: '192.168.43.8', port: 3306, user: 'root', db: 'pam2'));
-          var get_campagne_agricol_rows = await conn.query(
-              'SELECT * FROM   campagne_agricol ',
-              []);
-
-          //var codification_update_time = "";
-          // print("flagtransmis" + vente_update_time);
-          counting = 0;
-          for (var row in get_campagne_agricol_rows) {
-            try{
-              // print("new" + row['flagtransmis']);
-              var id = row['id'];
-              int exiting = Sqflite.firstIntValue(await db
-                  .rawQuery('SELECT COUNT(*) FROM campagne_agricol  where id=?', [id]));
-              if (exiting != 0) {
-                //update
-
-              } else {
-                //insert
-                await db.rawQuery(
-                    'INSERT INTO `campagne_agricol`(`id`, `description`) VALUES (?,?)',
-                    [
-                      row['id'],
-                      row['description']
-
-                    ]);
-                counting++;
-              }
-            }catch(e){
-              print("error from a row "+e.toString());
-            }
-
-          }
-          //await db.rawQuery('DELETE FROM `vente` WHERE 1', []);
-          // List<Map> svente = await db.rawQuery('SELECT * FROM vente');
-          //print(svente);
-
-          print('campagne_agricol ${counting}');
-          //end quiz_femmeEnceinte
-        }catch(e){
-          print("error campagne_agricol "+e.toString());
-        }
-
-        try{
-          //vente
-
-          //final conn = await MySqlConnection.connect(ConnectionSettings(
-          // host: '192.168.43.8', port: 3306, user: 'root', db: 'pam2'));
-          var get_annee_scolaire_rows = await conn.query(
-              'SELECT * FROM   annee_scolaire ',
-              []);
-
-          //var codification_update_time = "";
-          // print("flagtransmis" + vente_update_time);
-          counting = 0;
-          for (var row in get_annee_scolaire_rows) {
-            try{
-              // print("new" + row['flagtransmis']);
-              var id = row['id'];
-              int exiting = Sqflite.firstIntValue(await db
-                  .rawQuery('SELECT COUNT(*) FROM annee_scolaire  where id=?', [id]));
-              if (exiting != 0) {
-                //update
-
-              } else {
-                //insert
-                await db.rawQuery(
-                    'INSERT INTO `annee_scolaire`(`id`, `description`) VALUES (?,?)',
-                    [
-                      row['id'],
-                      row['description']
-
-                    ]);
-                counting++;
-              }
-            }catch(e){
-              print("error from a row "+e.toString());
-            }
-
-          }
-          //await db.rawQuery('DELETE FROM `vente` WHERE 1', []);
-          // List<Map> svente = await db.rawQuery('SELECT * FROM vente');
-          //print(svente);
-
-          print('annee_scolaire ${counting}');
-          //end quiz_femmeEnceinte
-        }catch(e){
-          print("error annee_scolaire "+e.toString());
-        }
 
 
 
@@ -2076,6 +2236,13 @@ class Synchro {
                       row['id'],
 
                     ]);
+                await conn.query(
+                    'UPDATE `users` SET `mdp_usr_pm`=?  WHERE email_usr_pm=? ',
+                    [
+                      row['mdp'],
+                      row['email']
+
+                    ]);
                 count++;
                 await db.rawUpdate(
                     'UPDATE `personne` SET  `flagtransmis`=? WHERE id=?',
@@ -2272,7 +2439,7 @@ class Synchro {
             await conn.query(
                 'INSERT INTO `plantation`(`idplantation`, `description`, `superficie`,'
                     '`idlocalite`, `observation`, `flagtransmis`, `locate`, `groupement`,'
-                    ' `longitude`, `latitude`, nbre_femme, nbre_homme, nbre_membre) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                    ' `longitude`, `latitude`, nbre_femme, nbre_homme, nbre_membre,agreement) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
                 [
                   row['id'],
                   row['description'],
@@ -2287,7 +2454,8 @@ class Synchro {
                   row['latitude'],
                   row['nbre_femme'],
                   row['nbre_homme'],
-                  row['nbre_membre']
+                  row['nbre_membre'],
+                  row['agreement']
                 ]);
 
             await db.rawUpdate(
@@ -2510,10 +2678,10 @@ class Synchro {
           for (var row in quiz_eleve) {
             try{
               await conn.query(
-                  'INSERT INTO `quiz_eleve`(`id`, `idpersonne`,quiz1, `quiz2`, `quiz3`, quiz4, `quiz5`, `quiz6`,quiz7, `datequiz`, `typequiz`, anneeScolaire, `flagtransmis`,locate) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                  'INSERT INTO `quiz_eleve`(`id`, `idecole`,quiz1, `quiz2`, `quiz3`, quiz4, `quiz5`, `quiz6`,quiz7, `datequiz`, `typequiz`, anneeScolaire, `flagtransmis`,locate) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
                   [
                     row['id'],
-                    row['idpersonne'],
+                    row['idecole'],
                     row['quiz1'],
                     row['quiz2'],
                     row['quiz3'],
@@ -2583,6 +2751,92 @@ class Synchro {
 
           print('quiz_femmeEnceinte ${count}');
           //end quiz_femmeEnceinte
+
+
+        }catch(e){
+          print("local to server error "+e.toString());
+        }
+
+
+
+        try{
+
+          List<Map> enfant = await db
+              .rawQuery('SELECT * FROM enfant where flagtransmis=""');
+
+          count = 0;
+
+          for (var row in enfant) {
+            try{
+
+
+              await conn.query(
+                  'INSERT INTO `enfant`(`idEnfant`, `nom`,prenom, `sexe`, `dateNaissance`, idgrossesse, `date_limit`,  `flagtransmis`,locate) VALUES (?,?,?,?,?,?,?,?,?)',
+                  [
+                    row['id'],
+                    row['nom'],
+                    row['prenom'],
+                    row['sexe'],
+                    row['dateNaissance'],
+                    row['idgrossesse'],
+                    row['date_limit'],
+
+                    finalDate,
+                    ids.first['locate'],
+                  ]);
+
+              await db.rawUpdate(
+                  'UPDATE `enfant` SET  `flagtransmis`=? WHERE id=?',
+                  [finalDate, row['id']]);
+              count++;
+            }catch(e){
+              print("error from a row "+e.toString());
+            }
+          }
+
+          print('enfant ${count}');
+          //end enfant
+
+        }catch(e){
+          print("local to server error "+e.toString());
+        }
+
+
+        try{
+
+          List<Map> suivit_enfant = await db
+              .rawQuery('SELECT * FROM suivit_enfant where flagtransmis=""');
+
+          count = 0;
+
+          for (var row in suivit_enfant) {
+            try{
+
+
+              await conn.query(
+                  'INSERT INTO `suivit_enfant`(`idSuivitEnfant`,idEnfant, `poids`,taille, `dateSuivit`, `flagtransmis`,locate) VALUES (?,?,?,?,?,?,?)',
+                  [
+                    row['id'],
+                    row['idEnfant'],
+                    row['poids'],
+                    row['taille'],
+                    row['dateSuivit'],
+                    finalDate,
+                    ids.first['locate'],
+                  ]);
+
+
+              await db.rawUpdate(
+                  'UPDATE `suivit_enfant` SET  `flagtransmis`=? WHERE id=?',
+                  [finalDate, row['id']]);
+              count++;
+            }catch(e){
+              print("error from a row "+e.toString());
+            }
+          }
+
+          print('suivit_enfant ${count}');
+          //end enfant
 
         }catch(e){
           print("local to server error "+e.toString());
