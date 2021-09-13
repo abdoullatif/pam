@@ -36,6 +36,7 @@ class _CommandeAccepterPannelState extends State<CommandeAccepterPannel> {
   Widget build(BuildContext context) {
     //var navigate
     int idpersonne_nav = ModalRoute.of(context).settings.arguments;
+
     return FutureBuilder(
         future: DbOnline.getCommandeAccepter(UserData.id.toString()),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -46,7 +47,7 @@ class _CommandeAccepterPannelState extends State<CommandeAccepterPannel> {
           }
           if (snapshot.hasError) {
             return Center(
-              child: Text("Un probleme est survenue, Veuillez vous connecter a internet ou verifier votre connection internet"),
+              child: Text("Un probleme est survenue, Veuillez vous connecter a internet ou verifier votre connection internet !"),
             );
           }
           //Data
@@ -57,94 +58,102 @@ class _CommandeAccepterPannelState extends State<CommandeAccepterPannel> {
             child: Container(
               height: 800.0, // Change as per your requirement
               width: 800.0, // Change as per your requirement
-              child: ListView(
-                shrinkWrap: true,
-                //itemCount: itemsM.length,
-                children: [
-                  for(var row in historique)
-                    Card(
-                        elevation: 5.0,
-                        child: TextButton(
-                          onPressed: () async {
-                            //Annuler la commande //Show alerte
-                            var reponse = await showDialog<String>(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: Align(
-                                    alignment: Alignment.center,
-                                    child: SizedBox(
-                                      //height: 50.0,
-                                      child: Text(
-                                        "COMMANDE RECU",
-                                        style: TextStyle(
-                                          fontSize: 18.0,
-                                          fontWeight: FontWeight.bold,
+              child: RefreshIndicator(
+                onRefresh: (){
+                  setState(() {});
+                  return Future.delayed(
+                    Duration(seconds: 0),
+                  );
+                },
+                child: ListView(
+                  shrinkWrap: true,
+                  //itemCount: itemsM.length,
+                  children: [
+                    for(var row in historique)
+                      Card(
+                          elevation: 5.0,
+                          child: TextButton(
+                            onPressed: () async {
+                              //Annuler la commande //Show alerte
+                              var reponse = await showDialog<String>(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Align(
+                                      alignment: Alignment.center,
+                                      child: SizedBox(
+                                        //height: 50.0,
+                                        child: Text(
+                                          "COMMANDE RECU",
+                                          style: TextStyle(
+                                            fontSize: 18.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  content: Text("Avez-vous recu la commande ?"),
-                                  actions: <Widget>[
-                                    FlatButton(
-                                      child: Text('OUI J\'AI RECU'),
-                                      onPressed: () {
-                                        Navigator.of(context).pop('oui');
-                                      },
-                                    ),
-                                    FlatButton(
-                                      child: Text('NON'),
-                                      onPressed: () {
-                                        Navigator.of(context).pop('non');
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                            print(reponse);
-                            if(reponse == "oui"){
-                              //Commande recu
-                              DbOnline.updateCommande(row['id_cmd']);
-                              setState(() {
-                                Fluttertoast.showToast(
-                                    msg: "Commande livree avec succes !",
-                                    toastLength: Toast.LENGTH_LONG,
-                                    gravity: ToastGravity.BOTTOM,
-                                    timeInSecForIosWeb: 5,
-                                    backgroundColor: Colors.green,
-                                    textColor: Colors.white,
-                                    fontSize: 16.0
-                                );
-                              });
-                            }
-                          },
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.transparent,
-                              foregroundColor: Colors.transparent,
-                              backgroundImage: row['image'].toString().contains("\\") ?
-                              NetworkImage('https://pamgnsupport.com/uploads/${row['image'].toString().substring(1)}') :
-                              NetworkImage('https://pamgnsupport.com/uploads/${row['image'].toString()}'),
-                              //backgroundImage: Image.file(file),
+                                    content: Text("Avez-vous recu la commande ?"),
+                                    actions: <Widget>[
+                                      FlatButton(
+                                        child: Text('OUI J\'AI RECU'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop('oui');
+                                        },
+                                      ),
+                                      FlatButton(
+                                        child: Text('NON'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop('non');
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                              print(reponse);
+                              if(reponse == "oui"){
+                                //Commande recu
+                                DbOnline.updateCommande(row['id_cmd']);
+                                setState(() {
+                                  Fluttertoast.showToast(
+                                      msg: "Commande livree avec succes !",
+                                      toastLength: Toast.LENGTH_LONG,
+                                      gravity: ToastGravity.BOTTOM,
+                                      timeInSecForIosWeb: 5,
+                                      backgroundColor: Colors.green,
+                                      textColor: Colors.white,
+                                      fontSize: 16.0
+                                  );
+                                });
+                              }
+                            },
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.transparent,
+                                foregroundColor: Colors.transparent,
+                                backgroundImage: row['image'].toString().contains("\\") ?
+                                NetworkImage('https://pamgnsupport.com/uploads/${row['image'].toString().substring(1)}') :
+                                NetworkImage('https://pamgnsupport.com/uploads/${row['image'].toString()}'),
+                                //backgroundImage: Image.file(file),
+                              ),
+                              title: Text('${row['designation']}',
+                                style: TextStyle(
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.bold,
+                                ),),
+                              subtitle: Text('Commercant : ${row['name']} ${row['prenom']}  telephone : ${row['contacte']}\n'
+                                  'Prix Unitaire : ${row['pu']} GNF   Prix Total : ${row['pt']} GNF \n'
+                                  'Date de commande : ${row['date_commande']}',
+                                style: TextStyle(
+                                  fontSize: 14.0,
+                                  fontWeight: FontWeight.bold,
+                                ),), //
+                              trailing: Text('${row['quantite']}'),
                             ),
-                            title: Text('${row['designation']}',
-                              style: TextStyle(
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.bold,
-                              ),),
-                            subtitle: Text('Commercant : ${row['name']} ${row['prenom']}  telephone : ${row['contacte']}\n'
-                                'Prix Unitaire : ${row['pu']} GNF   Prix Total : ${row['pt']} GNF \n'
-                                'Date de commande : ${row['date_commande']}',
-                              style: TextStyle(
-                                fontSize: 14.0,
-                                fontWeight: FontWeight.bold,
-                              ),), //
-                            trailing: Text('${row['quantite']}'),
-                          ),
-                        )
-                    )
-                ],
+                          )
+                      )
+                  ],
+                ),
               ),
             ),
           );
