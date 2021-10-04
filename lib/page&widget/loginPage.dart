@@ -213,7 +213,7 @@ class _PageLoginState extends State<PageLogin> {
                   );
                   */
         } else if(_email.text == "nfc-scan" && _mdp.text == "123456"){
-          //Si on est super utiliisateur
+          //scan nfc
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString('email', "nfc-scan");
           prefs.setString('mdp', "123456");
