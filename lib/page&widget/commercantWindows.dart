@@ -558,7 +558,7 @@ class _produitsCommercantPannelState extends State<produitsCommercantPannel> {
                 }
 
                 return Center(
-                  child: Text("Vous n'est pas Autoriser !"),
+                  child: Text("Vous n'est pas Autoriser !!"),
                 );
 
 
