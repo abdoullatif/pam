@@ -9,6 +9,7 @@ class UserData {
   static String name;
   static String prenom;
   static String privilege;
+  static String image;
   static String email_usr_pm;
   static String localite;
   static String contacte;

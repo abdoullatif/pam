@@ -54,7 +54,7 @@ class DbOnline {
     'select * from produits'
   );
 
-  static Future getCommercant (int localite, String idproduit) async => await conn.query(
+  static Future getCommercant (String localite, String idproduit) async => await conn.query(
       'select users.id,users.name,users.prenom,contacte,users.localite,stock.idcommercant,stock.idproduit,stock.quantite from users,stock where users.id=stock.idcommercant AND users.localite=? AND stock.idproduit=?', [localite,idproduit]
   );
 

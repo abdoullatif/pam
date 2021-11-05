@@ -97,7 +97,7 @@ Future<void> main () async {
     runApp(PamApp());
   });
   //
-  DbOnline.con();
+  //DbOnline.con();
   //
   HttpOverrides.global = new MyHttpOverrides();
 }

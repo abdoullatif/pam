@@ -83,6 +83,8 @@ class _AdminWindowsState extends State<AdminWindows> {
   @override
   void dispose() async{
     // TODO: implement dispose
+    //Remove connection
+    await DbOnline.closeCon();
     //quitter
     SharedPreferences prefs = await SharedPreferences.getInstance();
     //Remove
@@ -112,7 +114,19 @@ class _AdminWindowsState extends State<AdminWindows> {
   void NotificationLauncher() async{
     var user_online = await DbOnline.getUser(email);
     for(var row in user_online) {
+
       UserData.id_user_online_tmp = row['id'];
+
+      UserData.id = row['id'];
+      UserData.name = row['name'];
+      UserData.prenom = row['prenom'];
+      UserData.image = row['image'];
+      UserData.email_usr_pm = row['email_usr_pm'];
+      UserData.localite = row['localite'];
+      UserData.contacte = row['contacte'];
+      UserData.mdp_usr_pm = row['mdp_usr_pm'];
+
+
       var commandeAccepter = await DbOnline.getNombreCommandeAccepter(row['id'].toString());
       if(commandeAccepter.toString() != "(Fields: {nombrecommandeaccepter: 0})") {
         print(commandeAccepter);
@@ -428,6 +442,8 @@ class _AdminWindowsState extends State<AdminWindows> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
+          //Remove connection
+          await DbOnline.closeCon();
           //quitter
           SharedPreferences prefs = await SharedPreferences.getInstance();
           //Remove

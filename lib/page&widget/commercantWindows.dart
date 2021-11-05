@@ -94,8 +94,8 @@ class _produitsCommercantPannelState extends State<produitsCommercantPannel> {
 
   //Share pref
   //var idpersonne = StorageUtil.getString("idpersonne");
-  var idlocalite_pref = StorageUtil.getString("idlocalite");
-  var email = StorageUtil.getString("email");
+  var idlocalite_pref = UserData.localite;
+  var email = UserData.email_usr_pm;
 
   //Connection
   bool connection = false;
@@ -108,7 +108,7 @@ class _produitsCommercantPannelState extends State<produitsCommercantPannel> {
   String designation = "";
   String pu = "";
   String image = "";
-  int idlocalite = 1;
+  int idlocalite = UserData.localite as int;
 
   int total = 0;
 
@@ -136,6 +136,13 @@ class _produitsCommercantPannelState extends State<produitsCommercantPannel> {
         total = int.tryParse(_prixU.text) * _counter;
       }
     });
+  }
+
+  @override
+  void dispose() async{
+    // TODO: implement dispose
+    await DbOnline.closeCon();
+    super.dispose();
   }
 
   @override
@@ -375,10 +382,10 @@ class _produitsCommercantPannelState extends State<produitsCommercantPannel> {
 
                                         if(_formKey.currentState.validate()){
 
-                                          if(idlocalite_pref != "" || idlocalite_pref != null){
+                                          if(UserData.localite != null){
                                             //get id localite
-                                            var _locate = await DB.queryWherelocate("localite",idlocalite_pref);
-                                            idlocalite = _locate[0]["id"];
+                                            //var _locate = await DB.queryWherelocate("localite",idlocalite_pref);
+                                            //idlocalite = _locate[0]["id"];
                                             //Show alerte
                                             showDialog<String>(
                                               context: context,
@@ -574,7 +581,7 @@ class _produitsCommercantPannelState extends State<produitsCommercantPannel> {
           height: 400.0, // Change as per your requirement
           width: 300.0, // Change as per your requirement
           child: FutureBuilder(
-            future: DbOnline.getCommercant(idlocalite,idproduit),
+            future: DbOnline.getCommercant(UserData.localite,idproduit),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               var commercant = snapshot.data;
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -584,7 +591,7 @@ class _produitsCommercantPannelState extends State<produitsCommercantPannel> {
               }
               if (snapshot.hasError) {
                 return Center(
-                  child: Text("Erreur de chargement, Veuillez ressaiyez"),
+                  child: Text("Erreur de chargement, Veuillez ressailler"),
                 );
               }
 
